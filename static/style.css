@@ -112,7 +112,7 @@ button:active {
 } 
  
 #results { 
-    width: 100%; 
+    width: 90%; 
     max-width: 750px; 
     margin-top: 35px; 
     text-align: center; 
@@ -123,6 +123,7 @@ button:active {
     color: #333; 
     padding: 22px; 
     margin-top: 18px; 
+    margin-bottom: 18px; 
     border-radius: 14px; 
     border-left: 6px solid #ff6ec4; 
     box-shadow: 0 12px 25px rgba(0,0,0,0.2); 
