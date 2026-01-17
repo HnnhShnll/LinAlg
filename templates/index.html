@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Eigenvalue Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Eigenvalue Calculator</h1>
+        <p>Enter a square matrix (comma-separated values)</p>
+
+        <textarea id="matrixInput" placeholder="Example:
+1, 2
+3, 4"></textarea>
+
+        <button onclick="compute()">Compute</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function compute() {
+            const input = document.getElementById("matrixInput").value.trim();
+            const rows = input.split("\n").map(row =>
+                row.split(",").map(Number)
+            );
+
+            fetch("/compute", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ matrix: rows })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = "";
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<p class="error">${data.error}</p>`;
+                    return;
+                }
+
+                data.results.forEach((item, index) => {
+                    resultDiv.innerHTML += `
+                        <div class="output">
+                            <strong>Eigenvalue ${index + 1}:</strong> ${item.eigenvalue}<br>
+                            <strong>Eigenvector:</strong> [${item.eigenvector.join(", ")}]
+                        </div>
+                    `;
+                });
+            })
+            .catch(err => {
+                document.getElementById("result").innerHTML =
+                    `<p class="error">Something went wrong.</p>`;
+            });
+        }
+    </script>
+
+</body>
+</html>
