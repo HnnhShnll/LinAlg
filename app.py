@@ -1,6 +1,7 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import numpy as np
 
+# Initialize the Flask application
 app = Flask(__name__)
 
 def rref(matrix, tol=1e-10):
@@ -40,6 +41,12 @@ def rref(matrix, tol=1e-10):
     A[np.abs(A) < tol] = 0
     return A, pivots
 
+@app.route('/')
+def index():
+    """This function serves the index.html file to the browser."""
+    return render_template('index.html')
+
+
 @app.route('/compute', methods=['POST'])
 def compute():
     """Compute eigenvalues and eigenspace bases."""
@@ -73,7 +80,7 @@ def compute():
             # Form A - λI
             A_lambda = matrix - eigval * np.eye(n)
             
-            # Get RREF
+            # Get RREF using teammate's function
             rref_matrix, pivots = rref(A_lambda)
             
             # Find free variables
@@ -110,12 +117,14 @@ def compute():
             else:
                 formatted_eigval = float(f"{eigval:.4f}")
             
+            # Adding results to list
             results.append({
                 "eigenvalue": formatted_eigval,
                 "geometric_multiplicity": len(formatted_basis),
                 "basis": formatted_basis
             })
         
+        # Return final data back to the frontend
         return jsonify({
             "matrix_size": matrix.shape[0],
             "real_eigenvalues_count": len(unique_vals),
