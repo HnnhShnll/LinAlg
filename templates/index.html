@@ -78,8 +78,7 @@
                 });
 
                 if (!response.ok) {
-                    const text = await response.text();
-                    throw new Error(text || 'Server error');
+                    throw new Error('Server error');
                 }
 
                 const data = await response.json();
@@ -96,10 +95,12 @@
             div.innerHTML = '<h3>Results:</h3>';
 
             results.forEach((item, index) => {
+                let basisText = item.basis.map(vec => `[${vec.join(', ')}]`).join(' , ');
+                
                 div.innerHTML += `
                     <div class="result-item">
                         <strong>Eigenvalue (λ${index + 1}):</strong> ${item.eigenvalue} <br>
-                        <strong>Eigenvector:</strong> [${item.eigenvector.join(', ')}]
+                        <strong>Basis for Eigenspace:</strong> { ${basisText} }
                     </div>`;
             });
         }
