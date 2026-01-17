@@ -32,7 +32,6 @@ def compute():
                 ev_formatted = f"{round(ev.real, 4)} {sign} {round(abs(ev.imag), 4)}i"
 
             vec = eigenvectors[:, i]
-            
             scale_factor = 1
             for val in vec:
                 if abs(val) > 1e-10:
