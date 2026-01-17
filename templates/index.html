@@ -25,7 +25,7 @@
     <div id="results"></div>
 
     <div class="reference-card">
-        <img src="{{ url_for('static', filename='jp.jpg') }}" alt="Linear Algebra Professor">
+        <img src="{{ url_for('static', filename='jp.jpg') }}" alt="Professor">
         <h4>Video Reference</h4>
         <p>Math 206 | Eigenvalues and Eigenvectors</p>
         <a href="https://youtu.be/ElUQ6I8eDj4" target="_blank">Watch Tutorial</a>
@@ -96,12 +96,9 @@
             div.innerHTML = '<h3>Results:</h3>';
 
             results.forEach((item, index) => {
-                let val = item.eigenvalue;
-                let valStr = val[1] === 0 ? val[0] : `${val[0]} + ${val[1]}i`;
-
                 div.innerHTML += `
                     <div class="result-item">
-                        <strong>Eigenvalue (λ${index + 1}):</strong> ${valStr} <br>
+                        <strong>Eigenvalue (λ${index + 1}):</strong> ${item.eigenvalue} <br>
                         <strong>Eigenvector:</strong> [${item.eigenvector.join(', ')}]
                     </div>`;
             });
