@@ -1,15 +1,16 @@
-from flask import Flask, request, jsonify, send_from_directory # Added send_from_directory
+from flask import Flask, request, jsonify, render_template # Changed this
 from flask_cors import CORS
 import numpy as np
 import os
 
-app = Flask(__name__, static_folder='.') # Tell Flask to look in the current folder
+# Standard Flask initialization (defaults to looking for 'templates' and 'static' folders)
+app = Flask(__name__) 
 CORS(app)
 
-# ADD THIS ROUTE:
 @app.route('/')
 def index():
-    return send_from_directory('.', 'index.html')
+    # This looks for 'index.html' inside your 'templates' folder
+    return render_template('index.html')
 
 @app.route('/compute', methods=['POST'])
 def compute():
@@ -17,15 +18,11 @@ def compute():
         data = request.json
         matrix_data = data.get('matrix')
         
-        # Convert to NumPy array
         matrix = np.array(matrix_data, dtype=float)
         
         if matrix.shape[0] != matrix.shape[1]:
             return jsonify({"error": "Matrix must be square"}), 400
         
-        # Calculate Eigenvalues and Eigenvectors
-        # eigenvalues: 1D array
-        # eigenvectors: 2D array where columns are the vectors
         eigenvalues, eigenvectors = np.linalg.eig(matrix)
         
         results = []
