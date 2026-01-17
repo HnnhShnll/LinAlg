@@ -2,63 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Eigenvalue Calculator</title>
+    <title>Eigenstuff Calculator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
+    <h2>Eigen-stuff Calculator</h2>
+    <p>This calculator finds eigenvalues and eigenvectors of a square matrix.</p>
 
-    <div class="container">
-        <h1>Eigenvalue Calculator</h1>
-        <p>Enter a square matrix (comma-separated values)</p>
+    <p>Select Size (n x n): 
+        <select id="size" onchange="createGrid()">
+            <option value="2">2x2</option>
+            <option value="3">3x3</option>
+            <option value="4">4x4</option>
+            <option value="5">5x5</option>
+        </select>
+    </p>
 
-        <textarea id="matrixInput" placeholder="Example:
-1, 2
-3, 4"></textarea>
+    <div id="matrix-container" class="matrix-grid"></div>
+    <button onclick="calculate()">Compute</button>
 
-        <button onclick="compute()">Compute</button>
+    <div id="results"></div>
 
-        <div id="result"></div>
+    <div class="reference-card">
+        <img src="anotherone/static/jp.jpg" alt="Linear Algebra Professor">
+        <h4>Video Reference</h4>
+        <p>Math 206 | Eigenvalues and Eigenvectors</p>
+        <a href="https://youtu.be/ElUQ6I8eDj4" target="_blank">Watch Tutorial</a>
     </div>
 
+    <footer id="footer">
+        <div class="footer-content">
+            <div class="footerBox">
+                <h3>About us</h3>
+                <p>Group 9 | BSCS 2-3</p>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        function compute() {
-            const input = document.getElementById("matrixInput").value.trim();
-            const rows = input.split("\n").map(row =>
-                row.split(",").map(Number)
-            );
+        function createGrid() {
+            const size = document.getElementById('size').value;
+            const container = document.getElementById('matrix-container');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${size}, 70px)`;
 
-            fetch("/compute", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ matrix: rows })
-            })
-            .then(res => res.json())
-            .then(data => {
-                const resultDiv = document.getElementById("result");
-                resultDiv.innerHTML = "";
+            for (let i = 0; i < size * size; i++) {
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.value = '0';
+                input.step = 'any';
+                input.className = 'matrix-input';
+                container.appendChild(input);
+            }
+        }
 
-                if (data.error) {
-                    resultDiv.innerHTML = `<p class="error">${data.error}</p>`;
-                    return;
+        async function calculate() {
+            const size = parseInt(document.getElementById('size').value);
+            const inputs = document.querySelectorAll('.matrix-input');
+            const matrix = [];
+
+            for (let i = 0; i < size; i++) {
+                const row = [];
+                for (let j = 0; j < size; j++) {
+                    row.push(parseFloat(inputs[i * size + j].value) || 0);
+                }
+                matrix.push(row);
+            }
+
+            try {
+                const response = await fetch('/compute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matrix })
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'Server error');
                 }
 
-                data.results.forEach((item, index) => {
-                    resultDiv.innerHTML += `
-                        <div class="output">
-                            <strong>Eigenvalue ${index + 1}:</strong> ${item.eigenvalue}<br>
-                            <strong>Eigenvector:</strong> [${item.eigenvector.join(", ")}]
-                        </div>
-                    `;
-                });
-            })
-            .catch(err => {
-                document.getElementById("result").innerHTML =
-                    `<p class="error">Something went wrong.</p>`;
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+
+                displayResults(data.results);
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        }
+
+        function displayResults(results) {
+            const div = document.getElementById('results');
+            div.innerHTML = '<h3>Results:</h3>';
+
+            results.forEach((item, index) => {
+                let val = item.eigenvalue;
+                let valStr = val[1] === 0 ? val[0] : `${val[0]} + ${val[1]}i`;
+
+                div.innerHTML += `
+                    <div class="result-item">
+                        <strong>Eigenvalue (λ${index + 1}):</strong> ${valStr} <br>
+                        <strong>Eigenvector:</strong> [${item.eigenvector.join(', ')}]
+                    </div>`;
             });
         }
-    </script>
 
+        window.addEventListener('DOMContentLoaded', createGrid);
+    </script>
 </body>
 </html>
