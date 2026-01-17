@@ -1,15 +1,12 @@
-from flask import Flask, request, jsonify, render_template # Changed this
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import numpy as np
-import os
 
-# Standard Flask initialization (defaults to looking for 'templates' and 'static' folders)
-app = Flask(__name__) 
+app = Flask(__name__)
 CORS(app)
 
 @app.route('/')
 def index():
-    # This looks for 'index.html' inside your 'templates' folder
     return render_template('index.html')
 
 @app.route('/compute', methods=['POST'])
@@ -17,7 +14,6 @@ def compute():
     try:
         data = request.json
         matrix_data = data.get('matrix')
-        
         matrix = np.array(matrix_data, dtype=float)
         
         if matrix.shape[0] != matrix.shape[1]:
@@ -27,9 +23,28 @@ def compute():
         
         results = []
         for i in range(len(eigenvalues)):
+            ev = eigenvalues[i]
+            
+            if abs(ev.imag) < 1e-10:
+                ev_formatted = f"{round(ev.real, 4)}"
+            else:
+                sign = "+" if ev.imag > 0 else "-"
+                ev_formatted = f"{round(ev.real, 4)} {sign} {round(abs(ev.imag), 4)}i"
+
+            vec = eigenvectors[:, i]
+            
+            scale_factor = 1
+            for val in vec:
+                if abs(val) > 1e-10:
+                    scale_factor = val
+                    break
+            
+            scaled_vec = vec / scale_factor
+            formatted_vec = [round(v.real, 4) for v in scaled_vec]
+
             results.append({
-                "eigenvalue": round(complex(eigenvalues[i]).real, 4), 
-                "eigenvector": [round(val, 4) for val in eigenvectors[:, i]]
+                "eigenvalue": ev_formatted,
+                "eigenvector": formatted_vec
             })
             
         return jsonify({"results": results})
@@ -38,4 +53,4 @@ def compute():
         return jsonify({"error": str(e)}), 400
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True)
